@@ -1,0 +1,88 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: #fff8f3;
+  --foreground: #2d2422;
+  --muted-foreground: #6f5f5a;
+  --card: #ffffff;
+  --border: #f3ddd6;
+  --input-border: #e8d5cf;
+  --accent: #c2185b;
+  --accent-hover: #a31545;
+  --surface-muted: #fff0eb;
+  --success: #059669;
+}
+
+.dark {
+  --background: #120c0c;
+  --foreground: #f8ede8;
+  --muted-foreground: #b8a59f;
+  --card: #1c1412;
+  --border: #3d2c28;
+  --input-border: #4a3834;
+  --accent: #fb7185;
+  --accent-hover: #fda4af;
+  --surface-muted: #261a18;
+  --success: #34d399;
+}
+
+body {
+  color: var(--foreground);
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -20%, color-mix(in srgb, var(--accent) 12%, transparent), transparent),
+    var(--background);
+  font-family: system-ui, sans-serif;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+input,
+select,
+textarea,
+button {
+  font: inherit;
+}
+
+@keyframes cart-bump {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.12);
+  }
+}
+
+.cart-bump {
+  animation: cart-bump 0.45s ease;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.35s ease forwards;
+}
