@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import type { DeliveryStatus, OrderStatus, PaymentStatus } from '@domain/order'
 import { adminUpdateOrderStatusesAction } from '@/app/actions/shop'
+import { deliveryStatusLabel, orderStatusLabel, paymentStatusLabel } from '@/lib/orderLabels'
 
 type Props = {
   orderId: string
@@ -51,9 +52,11 @@ export function OrderStatusForm({ orderId, orderStatus, paymentStatus, deliveryS
             defaultValue={orderStatus}
             className="mt-1 w-full rounded-lg border border-[var(--input-border)] bg-[var(--background)] px-2 py-1"
           >
-            <option value="PENDING">PENDING</option>
-            <option value="CONFIRMED">CONFIRMED</option>
-            <option value="CANCELLED">CANCELLED</option>
+            {Object.entries(orderStatusLabel).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
           </select>
         </label>
         <label className="block text-sm">
@@ -63,10 +66,11 @@ export function OrderStatusForm({ orderId, orderStatus, paymentStatus, deliveryS
             defaultValue={paymentStatus}
             className="mt-1 w-full rounded-lg border border-[var(--input-border)] bg-[var(--background)] px-2 py-1"
           >
-            <option value="PENDING">PENDING</option>
-            <option value="PAID">PAID</option>
-            <option value="FAILED">FAILED</option>
-            <option value="REFUNDED">REFUNDED</option>
+            {Object.entries(paymentStatusLabel).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
           </select>
         </label>
         <label className="block text-sm">
@@ -76,11 +80,11 @@ export function OrderStatusForm({ orderId, orderStatus, paymentStatus, deliveryS
             defaultValue={deliveryStatus}
             className="mt-1 w-full rounded-lg border border-[var(--input-border)] bg-[var(--background)] px-2 py-1"
           >
-            <option value="PENDING">PENDING</option>
-            <option value="PREPARING">PREPARING</option>
-            <option value="SHIPPED">SHIPPED</option>
-            <option value="DELIVERED">DELIVERED</option>
-            <option value="CANCELLED">CANCELLED</option>
+            {Object.entries(deliveryStatusLabel).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
           </select>
         </label>
         <button

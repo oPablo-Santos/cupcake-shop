@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { adminListOrdersAction } from '@/app/actions/shop'
 import { formatCents } from '@/lib/money'
+import { orderStatusLabel } from '@/lib/orderLabels'
 import { AdminNav } from '@/app/admin/components/AdminNav'
 
 const statusBadge: Record<string, string> = {
@@ -50,7 +51,7 @@ export default async function AdminOrdersPage() {
                       <span
                         className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${statusBadge[order.orderStatus] ?? statusBadge.PENDING}`}
                       >
-                        {order.orderStatus}
+                        {orderStatusLabel[order.orderStatus]}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-[var(--muted-foreground)]">

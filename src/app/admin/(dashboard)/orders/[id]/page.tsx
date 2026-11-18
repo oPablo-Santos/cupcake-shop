@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import { adminGetOrderAction } from '@/app/actions/shop'
 import { formatCents } from '@/lib/money'
+import { paymentMethodLabel } from '@/lib/orderLabels'
 import { maskEmail, maskPhone } from '@/lib/pii'
 import { AdminNav } from '@/app/admin/components/AdminNav'
 import { OrderStatusForm } from '@/app/admin/components/OrderStatusForm'
@@ -35,7 +36,7 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
             <br />
             {order.neighborhood} — {order.city}/{order.state} — CEP {order.zipCode}
           </p>
-          <p className="text-sm">Pagamento: {order.paymentMethod}</p>
+          <p className="text-sm">Pagamento: {paymentMethodLabel[order.paymentMethod]}</p>
           <p className="font-medium">Total: {formatCents(order.totalCents)}</p>
         </section>
 
