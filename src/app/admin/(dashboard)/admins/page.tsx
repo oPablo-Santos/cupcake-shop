@@ -1,7 +1,7 @@
 import { adminListAdminsAction, isAdminAuthenticatedAction } from '@/app/actions/shop'
 import { AdminNav } from '@/app/admin/components/AdminNav'
 import { CreateAdminForm } from '@/app/admin/components/CreateAdminForm'
-import { DeactivateAdminButton } from '@/app/admin/components/DeactivateAdminButton'
+import { AdminRowMenu } from '@/app/admin/components/AdminRowMenu'
 
 export default async function AdminAdminsPage() {
   const session = await isAdminAuthenticatedAction()
@@ -60,11 +60,12 @@ export default async function AdminAdminsPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      {admin.active && admin.id !== currentId ? (
-                        <DeactivateAdminButton adminId={admin.id} username={admin.username} />
-                      ) : (
-                        <span className="text-xs text-[var(--muted-foreground)]">—</span>
-                      )}
+                      <AdminRowMenu
+                        adminId={admin.id}
+                        username={admin.username}
+                        active={admin.active}
+                        isSelf={admin.id === currentId}
+                      />
                     </td>
                   </tr>
                 ))}

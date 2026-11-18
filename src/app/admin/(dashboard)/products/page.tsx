@@ -1,9 +1,8 @@
-import Link from 'next/link'
 import { adminListProductsAction } from '@/app/actions/shop'
 import { formatCents } from '@/lib/money'
 import { AdminNav } from '@/app/admin/components/AdminNav'
 import { ProductForm } from '@/app/admin/components/ProductForm'
-import { DeactivateProductButton } from '@/app/admin/components/DeactivateProductButton'
+import { ProductRowMenu } from '@/app/admin/components/ProductRowMenu'
 
 export default async function AdminProductsPage() {
   const result = await adminListProductsAction()
@@ -55,12 +54,7 @@ export default async function AdminProductsPage() {
                   </span>
                 </td>
                 <td className="px-4 py-3">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Link href={`/admin/products/${product.id}`} className="text-[var(--accent)] underline">
-                      Editar
-                    </Link>
-                    {product.available && <DeactivateProductButton productId={product.id} />}
-                  </div>
+                  <ProductRowMenu productId={product.id} available={product.available} />
                 </td>
               </tr>
             ))}

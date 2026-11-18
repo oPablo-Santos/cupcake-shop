@@ -143,6 +143,15 @@ export async function adminUpdateProductAction(id: string, raw: unknown) {
   return { success: true as const, data: result.value }
 }
 
+export async function adminActivateProductAction(id: string) {
+  if (!(await requireAdminId())) return actionError('Não autorizado')
+  const result = await useCases.updateProduct.execute(id, { available: true })
+  if (result.kind === 'left') {
+    return actionError(domainMessage(result.value.code, result.value.message))
+  }
+  return { success: true as const, data: result.value }
+}
+
 export async function adminDeactivateProductAction(id: string) {
   if (!(await requireAdminId())) return actionError('Não autorizado')
   const result = await useCases.deactivateProduct.execute(id)
@@ -216,6 +225,15 @@ export async function adminDeactivateAdminAction(id: string) {
   if (!currentAdminId) return actionError('Não autorizado')
 
   const result = await useCases.deactivateAdminUser.execute(id, currentAdminId)
+  if (result.kind === 'left') {
+    return actionError(domainMessage(result.value.code, result.value.message))
+  }
+  return { success: true as const, data: result.value }
+}
+
+export async function adminActivateAdminAction(id: string) {
+  if (!(await requireAdminId())) return actionError('Não autorizado')
+  const result = await useCases.deactivateAdminUser.activate(id)
   if (result.kind === 'left') {
     return actionError(domainMessage(result.value.code, result.value.message))
   }

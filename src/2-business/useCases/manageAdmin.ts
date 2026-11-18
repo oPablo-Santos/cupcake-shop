@@ -122,4 +122,10 @@ export class DeactivateAdminUserUseCase {
     if (!updated) return left(adminNotFound)
     return right(updated)
   }
+
+  async activate(targetId: string): Promise<Either<DomainError, AdminUser>> {
+    const updated = await this.admins.setActive(targetId, true)
+    if (!updated) return left(adminNotFound)
+    return right(updated)
+  }
 }
