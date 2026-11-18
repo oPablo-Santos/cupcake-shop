@@ -87,29 +87,33 @@ export async function adminLoginAction(raw: unknown) {
   }
 
   const cookieStore = await cookies()
-  cookieStore.set(SESSION_COOKIE, result.value.token, {
+  const sessionCookie = {
     httpOnly: true,
-    sameSite: 'lax',
+    sameSite: 'lax' as const,
     secure: process.env.NODE_ENV === 'production',
-    path: '/admin',
     maxAge: MAX_AGE_SEC,
-  })
+  }
+  cookieStore.set(SESSION_COOKIE, '', { ...sessionCookie, path: '/', maxAge: 0 })
+  cookieStore.set(SESSION_COOKIE, result.value.token, { ...sessionCookie, path: '/admin' })
 
   return { success: true as const, data: { ok: true } }
 }
 
 export async function adminLogoutAction() {
   const cookieStore = await cookies()
+  cookieStore.delete({ name: SESSION_COOKIE, path: '/' })
   cookieStore.delete({ name: SESSION_COOKIE, path: '/admin' })
   redirect('/admin/login')
 }
 
 async function requireAdminId() {
   const cookieStore = await cookies()
-  const token = cookieStore.get(SESSION_COOKIE)?.value
-  const session = await useCases.verifyAdminSession.execute(token)
-  if (session.kind === 'left') return null
-  return session.value.adminUserId
+  const tokens = cookieStore.getAll().filter((cookie) => cookie.name === SESSION_COOKIE)
+  for (const cookie of tokens) {
+    const session = await useCases.verifyAdminSession.execute(cookie.value)
+    if (session.kind === 'right') return session.value.adminUserId
+  }
+  return null
 }
 
 export async function adminListProductsAction(): Promise<ActionSuccess<Product[]> | ActionFailure> {
