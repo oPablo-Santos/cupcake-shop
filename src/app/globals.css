@@ -86,3 +86,125 @@ button {
 .animate-fade-up {
   animation: fade-up 0.35s ease forwards;
 }
+
+.glass-card {
+  border-radius: 1.25rem;
+  border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+  background: color-mix(in srgb, var(--card) 82%, transparent);
+  box-shadow:
+    0 1px 2px color-mix(in srgb, var(--foreground) 6%, transparent),
+    0 12px 40px color-mix(in srgb, var(--accent) 6%, transparent);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+
+.glass-input {
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--input-border) 90%, transparent);
+  background: color-mix(in srgb, var(--background) 75%, transparent);
+  padding: 0.55rem 0.75rem;
+  color: var(--foreground);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.glass-input::placeholder {
+  color: var(--muted-foreground);
+}
+
+.glass-input:focus-visible {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.glass-input-error {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 2px color-mix(in srgb, #ef4444 25%, transparent);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  border-radius: 0.75rem;
+  padding: 0.55rem 1rem;
+  font-weight: 600;
+  transition:
+    transform 0.15s ease,
+    background-color 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: white;
+}
+
+.dark .btn-primary {
+  color: #141010;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.btn-ghost {
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--card) 70%, transparent);
+  color: var(--foreground);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+}
+
+@keyframes carousel-fade {
+  from {
+    opacity: 0.35;
+    transform: translateX(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.carousel-slide {
+  animation: carousel-fade 0.55s ease;
+}
+
+.carousel-dot {
+  height: 0.5rem;
+  width: 0.5rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--muted-foreground) 55%, transparent);
+  transition:
+    width 0.25s ease,
+    background-color 0.25s ease;
+}
+
+.carousel-dot-active {
+  width: 1.35rem;
+  background: var(--accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .carousel-slide {
+    animation: none;
+  }
+
+  .btn,
+  .glass-input,
+  body {
+    transition: none;
+  }
+}

@@ -4,12 +4,10 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import type { Product } from '@domain/product'
 import { productSchema, updateProductSchema } from '@controller/schemas'
-import { validateWithZod } from '@controller/actionResult'
+import { fieldErrorsFlat, validateWithZod } from '@controller/actionResult'
 import { adminCreateProductAction, adminUpdateProductAction } from '@/app/actions/shop'
 import { parseReaisToCents } from '@/lib/money'
-
-const inputClass =
-  'rounded-lg border border-[var(--input-border)] bg-[var(--background)] px-3 py-2 text-[var(--foreground)]'
+import { FormField } from '@/app/components/FormField'
 
 type Props = {
   product?: Product
@@ -18,11 +16,15 @@ type Props = {
 export function ProductForm({ product }: Props) {
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(false)
 
   async function onSubmit(formData: FormData) {
     setLoading(true)
     setError(null)
+    setSuccess(null)
+    setFieldErrors({})
 
     const priceCents = parseReaisToCents(String(formData.get('priceReais') ?? ''))
     if (priceCents === null) {
@@ -43,6 +45,7 @@ export function ProductForm({ product }: Props) {
     const validated = validateWithZod(schema, payload)
     if (!validated.ok) {
       setLoading(false)
+      setFieldErrors(fieldErrorsFlat(validated.field))
       setError(validated.errors[0] ?? 'Revise os campos do produto')
       return
     }
@@ -54,18 +57,27 @@ export function ProductForm({ product }: Props) {
     setLoading(false)
 
     if (!result.success) {
+      setFieldErrors(fieldErrorsFlat(result.errors.field))
       setError(result.errors.general[0] ?? 'Erro ao salvar')
       return
     }
 
-    router.push('/admin/products')
+    setSuccess(product ? 'Produto atualizado com sucesso.' : 'Produto criado com sucesso.')
+    if (!product) {
+      router.push('/admin/products')
+    }
     router.refresh()
   }
 
   return (
-    <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 shadow-sm">
+    <div className="glass-card p-4">
       <h2 className="mb-3 font-medium">{product ? 'Atualizar' : 'Novo produto'}</h2>
-      {error && <p className="mb-3 text-sm text-red-600 dark:text-red-400">{error}</p>}
+      {success ? (
+        <p className="mb-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300">
+          {success}
+        </p>
+      ) : null}
+      {error ? <p className="mb-3 text-sm text-red-600 dark:text-red-400">{error}</p> : null}
       <form
         noValidate
         onSubmit={(event) => {
@@ -74,50 +86,39 @@ export function ProductForm({ product }: Props) {
         }}
         className="grid gap-3 sm:grid-cols-2"
       >
-        <label className="block space-y-1 text-sm sm:col-span-2">
-          <span>Nome</span>
-          <input name="name" defaultValue={product?.name} placeholder="Nome do produto" className={inputClass} />
-        </label>
-        <label className="block space-y-1 text-sm sm:col-span-2">
-          <span>Descrição</span>
-          <textarea
+        <div className="sm:col-span-2">
+          <FormField label="Nome" name="name" defaultValue={product?.name} error={fieldErrors.name} />
+        </div>
+        <div className="sm:col-span-2">
+          <FormField
+            as="textarea"
+            label="Descrição"
             name="description"
             defaultValue={product?.description}
-            placeholder="Descrição"
-            className={`min-h-24 ${inputClass}`}
+            error={fieldErrors.description}
           />
-        </label>
-        <label className="block space-y-1 text-sm">
-          <span>Preço (R$)</span>
-          <input
-            name="priceReais"
-            type="number"
-            step="0.01"
-            min="0.01"
-            defaultValue={product ? (product.priceCents / 100).toFixed(2) : ''}
-            placeholder="0,00"
-            className={inputClass}
-          />
-        </label>
-        <label className="block space-y-1 text-sm">
-          <span>URL da imagem</span>
-          <input
-            name="imageUrl"
-            type="url"
-            defaultValue={product?.imageUrl}
-            placeholder="https://..."
-            className={inputClass}
-          />
-        </label>
+        </div>
+        <FormField
+          label="Preço (R$)"
+          name="priceReais"
+          type="number"
+          step="0.01"
+          min="0.01"
+          defaultValue={product ? (product.priceCents / 100).toFixed(2) : ''}
+          error={fieldErrors.priceCents}
+        />
+        <FormField
+          label="URL da imagem"
+          name="imageUrl"
+          type="url"
+          defaultValue={product?.imageUrl}
+          error={fieldErrors.imageUrl}
+        />
         <label className="flex items-center gap-2 text-sm sm:col-span-2">
           <input name="available" type="checkbox" defaultChecked={product?.available ?? true} />
           Disponível no catálogo
         </label>
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded-lg bg-[var(--accent)] px-4 py-2 font-medium text-white sm:col-span-2 disabled:opacity-60 dark:text-[#141010]"
-        >
+        <button type="submit" disabled={loading} className="btn btn-primary sm:col-span-2">
           {loading ? 'Salvando...' : 'Salvar'}
         </button>
       </form>

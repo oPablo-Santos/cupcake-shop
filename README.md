@@ -11,7 +11,7 @@ Monólito Next.js + TypeScript + Prisma + PostgreSQL com camadas `1-domain`, `2-
 
 ```bash
 cp .env.example .env
-# Defina DATABASE_URL, ADMIN_PASSWORD (≥12 chars) e ADMIN_SESSION_SECRET (≥16 chars, aleatório)
+# Defina DATABASE_URL, ADMIN_PASSWORD (≥12 chars), ADMIN_SESSION_SECRET (≥16 chars) e, opcionalmente, ADMIN_USERNAME (bootstrap)
 npm install
 npm run db:generate
 npm run db:push
@@ -21,7 +21,13 @@ npm run dev
 
 **Catálogo e admin dependem de PostgreSQL ativo.** Sem banco ou sem `npm run db:seed`, a home pode exibir mensagem amigável e o admin não terá produtos/pedidos para validar o fluxo completo.
 
-Abra [http://localhost:3456](http://localhost:3456). Admin: [http://localhost:3456/admin/login](http://localhost:3456/admin/login) com a senha definida em `ADMIN_PASSWORD` (exemplo local: `cupcake-admin-dev`).
+Abra [http://localhost:3456](http://localhost:3456).
+
+### Admin e bootstrap
+
+No **primeiro login**, se não existir nenhum `AdminUser` no banco, o sistema cria automaticamente um administrador usando `ADMIN_PASSWORD` (valor da senha inicial) e `ADMIN_USERNAME` (padrão `admin`). `ADMIN_PASSWORD` **só** serve para esse bootstrap — o acesso diário é **usuário** (`admin` ou o valor de `ADMIN_USERNAME`) **+ a mesma senha** que você definiu em `ADMIN_PASSWORD` (ou a senha de contas criadas em `/admin/admins`). Gerencie contas em `/admin/admins` (criar/desativar; não é possível desativar a si mesmo).
+
+Admin: [http://localhost:3456/admin/login](http://localhost:3456/admin/login) — use o usuário bootstrap e a senha definida no seu `.env` (não commite valores reais).
 
 **PostgreSQL via Docker (opcional):**
 
@@ -48,7 +54,7 @@ npm run db:push && npm run db:seed
 ## Escopo do MVP
 
 - Catálogo público, carrinho (localStorage), checkout com recálculo de preços no servidor
-- Admin com login por senha (cookie assinado), CRUD de produtos, desativação em vez de delete destrutivo
+- Admin com usuários no banco (bootstrap via env), sessão em cookie httpOnly HMAC, CRUD de produtos e gestão de admins
 - Listagem/detalhe de pedidos com atualização de status
 
 ## Dados pessoais (MVP)
@@ -83,8 +89,8 @@ git push -u origin main
 
 | Variável | Valor |
 |----------|--------|
-| `DATABASE_URL` | Neon pooled |
-| `DIRECT_URL` | Neon direct |
+| `DATABASE_URL` | Neon **pooled** (host com `-pooler`) |
+| `DIRECT_URL` **ou** `DATABASE_URL_UNPOOLED` | Neon **direct** (sem pooler); obrigatório no build |
 | `ADMIN_PASSWORD` | Senha forte (≥ 12 chars, não use exemplos do README) |
 | `ADMIN_SESSION_SECRET` | Segredo aleatório (≥ 16 chars), ex.: `openssl rand -base64 24` |
 | `NEXT_PUBLIC_SITE_URL` | `https://<seu-projeto>.vercel.app` |
@@ -106,7 +112,7 @@ Ou, a partir da máquina local apontando só `DATABASE_URL`/`DIRECT_URL` para o 
 ### 5. Pós-deploy
 
 - Abra a URL pública → catálogo com produtos.
-- `/admin/login` com a senha definida em `ADMIN_PASSWORD`.
+- `/admin/login` com usuário bootstrap (`ADMIN_USERNAME` ou `admin`) e a senha definida em `ADMIN_PASSWORD` (somente até você criar outras contas).
 - Se o catálogo estiver vazio, o seed não foi executado ou falhou a conexão.
 
 ### CI (GitHub Actions)

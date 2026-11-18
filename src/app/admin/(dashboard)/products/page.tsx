@@ -22,7 +22,13 @@ export default async function AdminProductsPage() {
 
       <ProductForm />
 
-      <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm">
+      {result.data.length === 0 ? (
+        <div className="glass-card p-8 text-center text-[var(--muted-foreground)]">
+          Nenhum produto cadastrado. Use o formulário acima para adicionar o primeiro.
+        </div>
+      ) : (
+      <div className="glass-card overflow-hidden">
+        <div className="overflow-x-auto">
         <table className="min-w-full text-left text-sm">
           <thead>
             <tr className="border-b border-[var(--border)] bg-[var(--surface-muted)] text-xs uppercase tracking-wide text-[var(--muted-foreground)]">
@@ -60,7 +66,9 @@ export default async function AdminProductsPage() {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
+      )}
     </div>
   )
 }

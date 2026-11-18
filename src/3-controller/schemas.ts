@@ -70,7 +70,26 @@ export const productSchema = z.object({
 export const updateProductSchema = productSchema.partial()
 
 export const adminLoginSchema = z.object({
+  username: z
+    .string()
+    .min(1, 'Informe o usuário')
+    .min(2, 'Usuário inválido')
+    .max(64, 'Usuário muito longo'),
   password: z.string().min(1, 'Informe a senha').max(256, 'Senha muito longa'),
+})
+
+export const createAdminSchema = z.object({
+  username: z
+    .string()
+    .min(1, 'Informe o usuário')
+    .min(2, 'Usuário deve ter pelo menos 2 caracteres')
+    .max(64, 'Usuário muito longo')
+    .regex(/^[a-zA-Z0-9_-]+$/, 'Use apenas letras, números, _ e -'),
+  password: z
+    .string()
+    .min(1, 'Informe a senha')
+    .min(12, 'Senha deve ter pelo menos 12 caracteres')
+    .max(256, 'Senha muito longa'),
 })
 
 export const updateOrderStatusesSchema = z.object({

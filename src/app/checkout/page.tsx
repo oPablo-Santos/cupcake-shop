@@ -49,7 +49,7 @@ export default function CheckoutPage() {
 
   if (items.length === 0) {
     return (
-      <div className="space-y-4 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-8 text-center">
+      <div className="space-y-4 glass-card p-8 text-center">
         <h1 className="text-2xl font-semibold">Checkout</h1>
         <p className="text-[var(--muted-foreground)]">Adicione itens ao carrinho antes de finalizar.</p>
         <Link href="/" className="inline-block font-medium text-[var(--accent)] underline-offset-4 hover:underline">
@@ -167,7 +167,7 @@ export default function CheckoutPage() {
         )}
       </div>
 
-      <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm">
+      <div className="glass-card p-5 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-sm font-medium uppercase tracking-wide text-[var(--muted-foreground)]">Seu pedido</h2>
           <Link
@@ -222,7 +222,7 @@ export default function CheckoutPage() {
           event.preventDefault()
           void onSubmit(new FormData(event.currentTarget))
         }}
-        className="space-y-6 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm"
+        className="space-y-6 glass-card p-6 shadow-sm"
       >
         <fieldset className="grid gap-3 sm:grid-cols-2">
           <legend className="mb-2 font-medium">Cliente</legend>

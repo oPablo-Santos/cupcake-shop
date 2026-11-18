@@ -1,27 +1,13 @@
 import crypto from 'crypto'
 import type { IAdminAuth } from '@business/useCases/adminAuth'
+import { WEAK_VALUES } from '@business/passwordPolicy'
 
 const SESSION_COOKIE = 'admin_session'
 const MAX_AGE_SEC = 60 * 60 * 8
 
-const WEAK_VALUES = new Set([
-  'change-me',
-  'change-me-long-random-string',
-  'dev-insecure',
-  'password',
-  'admin',
-  '123456',
-  '12345678',
-])
-
 function isWeakSecret(value: string) {
   const normalized = value.trim().toLowerCase()
   return normalized.length < 16 || WEAK_VALUES.has(normalized)
-}
-
-function isWeakPassword(value: string) {
-  const normalized = value.trim().toLowerCase()
-  return normalized.length < 12 || WEAK_VALUES.has(normalized)
 }
 
 function sessionSecret() {
@@ -30,56 +16,43 @@ function sessionSecret() {
   return secret
 }
 
-function configuredAdminPassword() {
-  const password = process.env.ADMIN_PASSWORD?.trim()
-  if (!password || isWeakPassword(password)) return null
-  return password
-}
-
 export class AdminAuthService implements IAdminAuth {
-  verifyPassword(password: string) {
-    const expected = configuredAdminPassword()
-    if (!expected) return false
-    const a = Buffer.from(password)
-    const b = Buffer.from(expected)
-    if (a.length !== b.length) return false
-    return crypto.timingSafeEqual(a, b)
-  }
-
   isSessionConfigured() {
     return sessionSecret() !== null
   }
 
-  createSessionToken() {
+  createSessionToken(adminUserId: string) {
     const secret = sessionSecret()
     if (!secret) return null
 
     const issuedAt = Date.now().toString()
     const nonce = crypto.randomBytes(16).toString('hex')
-    const payload = `${issuedAt}.${nonce}`
+    const payload = `${adminUserId}.${issuedAt}.${nonce}`
     const sig = crypto.createHmac('sha256', secret).update(payload).digest('hex')
     return `${payload}.${sig}`
   }
 
   verifySessionToken(token: string | undefined) {
     const secret = sessionSecret()
-    if (!secret || !token) return false
+    if (!secret || !token) return null
 
     const parts = token.split('.')
-    if (parts.length !== 3) return false
-    const [issuedAt, nonce, sig] = parts
-    if (!issuedAt || !nonce || !sig) return false
+    if (parts.length !== 4) return null
+    const [adminUserId, issuedAt, nonce, sig] = parts
+    if (!adminUserId || !issuedAt || !nonce || !sig) return null
 
-    const payload = `${issuedAt}.${nonce}`
+    const payload = `${adminUserId}.${issuedAt}.${nonce}`
     const expected = crypto.createHmac('sha256', secret).update(payload).digest('hex')
     try {
-      if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) return false
+      if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) return null
     } catch {
-      return false
+      return null
     }
 
     const ageMs = Date.now() - Number(issuedAt)
-    return Number.isFinite(ageMs) && ageMs >= 0 && ageMs <= MAX_AGE_SEC * 1000
+    if (!Number.isFinite(ageMs) || ageMs < 0 || ageMs > MAX_AGE_SEC * 1000) return null
+
+    return adminUserId
   }
 }
 

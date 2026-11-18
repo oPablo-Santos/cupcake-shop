@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { getCatalogProducts } from '@/app/actions/shop'
 import { ProductCard } from '@/app/components/ProductCard'
+import { DailySuggestionsCarousel } from '@/app/components/DailySuggestionsCarousel'
+import { pickDailyProducts } from '@domain/pickDailyProducts'
 
 export const metadata: Metadata = {
   title: 'Cupcakes artesanais para encomenda | Cupcake Shop',
@@ -34,7 +36,7 @@ export default async function HomePage() {
     const message = result.errors.general[0] ?? 'Não foi possível carregar o catálogo.'
     return (
       <div className="space-y-6">
-        <header className="space-y-2 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
+        <header className="glass-card space-y-2 p-6">
           <p className="text-sm font-medium uppercase tracking-wider text-[var(--accent)]">Doces artesanais</p>
           <h1 className="text-3xl font-semibold tracking-tight">Catálogo</h1>
         </header>
@@ -71,19 +73,22 @@ export default async function HomePage() {
     })),
   }
 
+  const dailyPicks = pickDailyProducts(result.data)
+
   return (
     <div className="space-y-8">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <header className="space-y-2 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
+      <header className="glass-card space-y-2 p-6">
         <p className="text-sm font-medium uppercase tracking-wider text-[var(--accent)]">Doces artesanais</p>
         <h1 className="text-3xl font-semibold tracking-tight">Catálogo</h1>
         <p className="max-w-xl text-[var(--muted-foreground)]">
           Massas fofinhas, coberturas generosas e combinações pensadas para surpreender — escolha seus favoritos.
         </p>
       </header>
+      <DailySuggestionsCarousel products={dailyPicks} />
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {result.data.map((product) => (
           <ProductCard key={product.id} product={product} />

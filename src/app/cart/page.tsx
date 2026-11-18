@@ -23,7 +23,7 @@ export default function CartPage() {
 
   if (items.length === 0) {
     return (
-      <div className="space-y-4 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-8 text-center shadow-sm">
+      <div className="glass-card space-y-4 p-8 text-center">
         <h1 className="text-2xl font-semibold">Carrinho</h1>
         <p className="text-[var(--muted-foreground)]">Seu carrinho está vazio.</p>
         <Link href="/" className="inline-block font-medium text-[var(--accent)] underline-offset-4 hover:underline">
@@ -43,7 +43,7 @@ export default function CartPage() {
         </p>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm">
+      <div className="glass-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full text-left text-sm">
             <thead>

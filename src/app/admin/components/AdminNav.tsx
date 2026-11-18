@@ -3,23 +3,23 @@ import { adminLogoutAction } from '@/app/actions/shop'
 
 export function AdminNav() {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border)] pb-4">
-      <nav className="flex gap-4 text-sm font-medium">
-        <Link href="/admin/products" className="text-[var(--muted-foreground)] hover:text-[var(--accent)]">
+    <nav className="glass-card flex flex-wrap items-center justify-between gap-3 px-4 py-3 text-sm">
+      <div className="flex flex-wrap items-center gap-4">
+        <Link href="/admin/products" className="font-medium text-[var(--foreground)] hover:text-[var(--accent)]">
           Produtos
         </Link>
-        <Link href="/admin/orders" className="text-[var(--muted-foreground)] hover:text-[var(--accent)]">
+        <Link href="/admin/orders" className="font-medium text-[var(--muted-foreground)] hover:text-[var(--accent)]">
           Pedidos
         </Link>
-      </nav>
+        <Link href="/admin/admins" className="font-medium text-[var(--muted-foreground)] hover:text-[var(--accent)]">
+          Administradores
+        </Link>
+      </div>
       <form action={adminLogoutAction}>
-        <button
-          type="submit"
-          className="text-sm text-[var(--muted-foreground)] hover:text-red-600 dark:hover:text-red-400"
-        >
+        <button type="submit" className="btn btn-ghost text-sm">
           Sair
         </button>
       </form>
-    </div>
+    </nav>
   )
 }

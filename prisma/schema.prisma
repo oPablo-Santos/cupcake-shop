@@ -81,3 +81,12 @@ enum DeliveryStatus {
   DELIVERED
   CANCELLED
 }
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}

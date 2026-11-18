@@ -2,12 +2,20 @@
 
 import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { checkoutSchema, adminLoginSchema, productSchema, updateProductSchema, updateOrderStatusesSchema } from '@controller/schemas'
+import {
+  checkoutSchema,
+  adminLoginSchema,
+  createAdminSchema,
+  productSchema,
+  updateProductSchema,
+  updateOrderStatusesSchema,
+} from '@controller/schemas'
 import { actionError, domainMessage, validateWithZod, type ActionFailure, type ActionSuccess } from '@controller/actionResult'
 import { consumeRateLimit } from '@controller/rateLimit'
 import { useCases, SESSION_COOKIE, MAX_AGE_SEC } from '@framework/ioc/useCases'
 import type { Product } from '@domain/product'
 import type { Order } from '@domain/order'
+import type { AdminUser } from '@domain/adminUser'
 
 async function rateLimitKey(scope: string) {
   const headerStore = await headers()
@@ -66,9 +74,14 @@ export async function adminLoginAction(raw: unknown) {
   }
 
   const validated = validateWithZod(adminLoginSchema, raw)
-  if (!validated.ok) return actionError(validated.errors[0] ?? 'Informe a senha')
+  if (!validated.ok) return actionError(validated.errors[0] ?? 'Revise usuário e senha', validated.field)
 
-  const result = useCases.adminLogin.execute(validated.data.password)
+  const bootstrap = await useCases.bootstrapAdmin.execute()
+  if (bootstrap.kind === 'left' && bootstrap.value.code === 'ADMIN_MISCONFIGURED') {
+    return actionError(domainMessage(bootstrap.value.code, bootstrap.value.message))
+  }
+
+  const result = await useCases.adminLogin.execute(validated.data.username, validated.data.password)
   if (result.kind === 'left') {
     return actionError(domainMessage(result.value.code, result.value.message))
   }
@@ -78,7 +91,7 @@ export async function adminLoginAction(raw: unknown) {
     httpOnly: true,
     sameSite: 'lax',
     secure: process.env.NODE_ENV === 'production',
-    path: '/',
+    path: '/admin',
     maxAge: MAX_AGE_SEC,
   })
 
@@ -87,26 +100,26 @@ export async function adminLoginAction(raw: unknown) {
 
 export async function adminLogoutAction() {
   const cookieStore = await cookies()
-  cookieStore.delete(SESSION_COOKIE)
+  cookieStore.delete({ name: SESSION_COOKIE, path: '/admin' })
   redirect('/admin/login')
 }
 
-async function requireAdmin() {
+async function requireAdminId() {
   const cookieStore = await cookies()
   const token = cookieStore.get(SESSION_COOKIE)?.value
-  const session = useCases.verifyAdminSession.execute(token)
+  const session = await useCases.verifyAdminSession.execute(token)
   if (session.kind === 'left') return null
-  return true
+  return session.value.adminUserId
 }
 
 export async function adminListProductsAction(): Promise<ActionSuccess<Product[]> | ActionFailure> {
-  if (!(await requireAdmin())) return actionError('Não autorizado')
+  if (!(await requireAdminId())) return actionError('Não autorizado')
   const result = await useCases.listAllProducts.execute()
   return { success: true as const, data: result.value }
 }
 
 export async function adminCreateProductAction(raw: unknown) {
-  if (!(await requireAdmin())) return actionError('Não autorizado')
+  if (!(await requireAdminId())) return actionError('Não autorizado')
   const validated = validateWithZod(productSchema, raw)
   if (!validated.ok) {
     return actionError(validated.errors[0] ?? 'Revise os campos do produto.', validated.field)
@@ -117,7 +130,7 @@ export async function adminCreateProductAction(raw: unknown) {
 }
 
 export async function adminUpdateProductAction(id: string, raw: unknown) {
-  if (!(await requireAdmin())) return actionError('Não autorizado')
+  if (!(await requireAdminId())) return actionError('Não autorizado')
   const validated = validateWithZod(updateProductSchema, raw)
   if (!validated.ok) {
     return actionError(validated.errors[0] ?? 'Revise os campos do produto.', validated.field)
@@ -131,7 +144,7 @@ export async function adminUpdateProductAction(id: string, raw: unknown) {
 }
 
 export async function adminDeactivateProductAction(id: string) {
-  if (!(await requireAdmin())) return actionError('Não autorizado')
+  if (!(await requireAdminId())) return actionError('Não autorizado')
   const result = await useCases.deactivateProduct.execute(id)
   if (result.kind === 'left') {
     return actionError(domainMessage(result.value.code, result.value.message))
@@ -140,13 +153,13 @@ export async function adminDeactivateProductAction(id: string) {
 }
 
 export async function adminListOrdersAction(): Promise<ActionSuccess<Order[]> | ActionFailure> {
-  if (!(await requireAdmin())) return actionError('Não autorizado')
+  if (!(await requireAdminId())) return actionError('Não autorizado')
   const result = await useCases.listOrders.execute()
   return { success: true as const, data: result.value }
 }
 
 export async function adminGetOrderAction(id: string): Promise<ActionSuccess<Order> | ActionFailure> {
-  if (!(await requireAdmin())) return actionError('Não autorizado')
+  if (!(await requireAdminId())) return actionError('Não autorizado')
   const result = await useCases.getOrder.execute(id)
   if (result.kind === 'left') {
     return actionError(domainMessage(result.value.code, result.value.message))
@@ -155,7 +168,7 @@ export async function adminGetOrderAction(id: string): Promise<ActionSuccess<Ord
 }
 
 export async function adminUpdateOrderStatusesAction(id: string, raw: unknown) {
-  if (!(await requireAdmin())) return actionError('Não autorizado')
+  if (!(await requireAdminId())) return actionError('Não autorizado')
   const validated = validateWithZod(updateOrderStatusesSchema, raw)
   if (!validated.ok) return actionError('Dados inválidos')
 
@@ -167,6 +180,44 @@ export async function adminUpdateOrderStatusesAction(id: string, raw: unknown) {
 }
 
 export async function isAdminAuthenticatedAction() {
-  const ok = await requireAdmin()
-  return { success: true as const, data: { authenticated: !!ok } }
+  const adminUserId = await requireAdminId()
+  return {
+    success: true as const,
+    data: { authenticated: !!adminUserId, adminUserId: adminUserId ?? undefined },
+  }
+}
+
+export async function adminListAdminsAction(): Promise<ActionSuccess<AdminUser[]> | ActionFailure> {
+  if (!(await requireAdminId())) return actionError('Não autorizado')
+  const result = await useCases.listAdminUsers.execute()
+  if (result.kind === 'left') return actionError('Erro ao listar administradores')
+  return { success: true as const, data: result.value }
+}
+
+export async function adminCreateAdminAction(raw: unknown) {
+  if (!(await requireAdminId())) return actionError('Não autorizado')
+  const validated = validateWithZod(createAdminSchema, raw)
+  if (!validated.ok) {
+    return actionError(validated.errors[0] ?? 'Revise os campos', validated.field)
+  }
+
+  const result = await useCases.createAdminUser.execute(
+    validated.data.username,
+    validated.data.password,
+  )
+  if (result.kind === 'left') {
+    return actionError(domainMessage(result.value.code, result.value.message))
+  }
+  return { success: true as const, data: result.value }
+}
+
+export async function adminDeactivateAdminAction(id: string) {
+  const currentAdminId = await requireAdminId()
+  if (!currentAdminId) return actionError('Não autorizado')
+
+  const result = await useCases.deactivateAdminUser.execute(id, currentAdminId)
+  if (result.kind === 'left') {
+    return actionError(domainMessage(result.value.code, result.value.message))
+  }
+  return { success: true as const, data: result.value }
 }

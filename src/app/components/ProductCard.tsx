@@ -5,7 +5,7 @@ import { AddToCartButton } from '@/app/components/AddToCartButton'
 
 export function ProductCard({ product }: { product: Product }) {
   return (
-    <article className="group animate-fade-up flex flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[var(--accent)]/30 hover:shadow-lg hover:shadow-[var(--accent)]/10">
+    <article className="glass-card group animate-fade-up flex flex-col overflow-hidden transition duration-300 hover:-translate-y-1 hover:border-[var(--accent)]/30 hover:shadow-lg hover:shadow-[var(--accent)]/10">
       <div className="relative aspect-[4/3] bg-[var(--surface-muted)]">
         <Image
           src={product.imageUrl}

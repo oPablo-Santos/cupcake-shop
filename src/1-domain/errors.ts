@@ -20,7 +20,22 @@ export const orderNotFound: DomainError = {
 
 export const invalidCredentials: DomainError = {
   code: 'INVALID_CREDENTIALS',
-  message: 'Senha inválida',
+  message: 'Usuário ou senha inválidos',
+}
+
+export const adminNotFound: DomainError = {
+  code: 'ADMIN_NOT_FOUND',
+  message: 'Administrador não encontrado',
+}
+
+export const usernameTaken: DomainError = {
+  code: 'USERNAME_TAKEN',
+  message: 'Nome de usuário já em uso',
+}
+
+export const cannotDeactivateSelf: DomainError = {
+  code: 'CANNOT_DEACTIVATE_SELF',
+  message: 'Você não pode desativar sua própria conta',
 }
 
 export const adminMisconfigured: DomainError = {
@@ -46,4 +61,9 @@ export const emptyCart: DomainError = {
 export const invalidZipCode: DomainError = {
   code: 'INVALID_ZIP',
   message: 'CEP inválido',
+}
+
+export const weakPassword: DomainError = {
+  code: 'WEAK_PASSWORD',
+  message: 'A senha deve ter pelo menos 12 caracteres e não ser óbvia',
 }
