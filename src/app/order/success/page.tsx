@@ -6,7 +6,7 @@ import { formatZipCodeInput } from '@domain/shipping'
 import { PAYMENT_METHOD_LABELS } from '@/lib/site'
 
 export const metadata: Metadata = {
-  title: 'Pedido confirmado | Cupcake Shop',
+  title: { absolute: 'Pedido confirmado | Cupcake Shop' },
   robots: { index: false, follow: false },
 }
 

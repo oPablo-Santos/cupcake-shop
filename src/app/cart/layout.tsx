@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Carrinho | Cupcake Shop',
+  title: { absolute: 'Carrinho | Cupcake Shop' },
   description: 'Revise os cupcakes escolhidos e siga para o checkout.',
 }
 

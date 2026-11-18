@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 type Item = {
   label: string
@@ -11,11 +12,24 @@ type Item = {
   onSelect?: () => void
 }
 
+const MENU_WIDTH = 224
+
 export function ActionMenu({ items, busy }: { items: Item[]; busy?: boolean }) {
   const [open, setOpen] = useState(false)
   const [pos, setPos] = useState({ top: 0, left: 0 })
   const buttonRef = useRef<HTMLButtonElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
+  const menuId = useId()
+
+  function place() {
+    const rect = buttonRef.current?.getBoundingClientRect()
+    if (!rect) return
+    const left = Math.min(Math.max(12, rect.right - MENU_WIDTH), window.innerWidth - MENU_WIDTH - 12)
+    const estimated = 12 + items.length * 40
+    const below = rect.bottom + 8
+    const top = below + estimated > window.innerHeight - 12 ? Math.max(12, rect.top - estimated - 8) : below
+    setPos({ top, left })
+  }
 
   useEffect(() => {
     if (!open) return
@@ -27,19 +41,20 @@ export function ActionMenu({ items, busy }: { items: Item[]; busy?: boolean }) {
     function onKey(event: KeyboardEvent) {
       if (event.key === 'Escape') setOpen(false)
     }
+    function onLayout() {
+      place()
+    }
     window.addEventListener('mousedown', onPointer)
     window.addEventListener('keydown', onKey)
+    window.addEventListener('resize', onLayout)
+    window.addEventListener('scroll', onLayout, true)
     return () => {
       window.removeEventListener('mousedown', onPointer)
       window.removeEventListener('keydown', onKey)
+      window.removeEventListener('resize', onLayout)
+      window.removeEventListener('scroll', onLayout, true)
     }
-  }, [open])
-
-  function toggle() {
-    const rect = buttonRef.current?.getBoundingClientRect()
-    if (rect) setPos({ top: rect.bottom + 6, left: rect.right })
-    setOpen((value) => !value)
-  }
+  }, [open, items.length])
 
   return (
     <>
@@ -49,29 +64,35 @@ export function ActionMenu({ items, busy }: { items: Item[]; busy?: boolean }) {
         disabled={busy}
         aria-expanded={open}
         aria-haspopup="menu"
-        onClick={toggle}
-        className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--card)] px-3 py-1.5 text-sm font-medium shadow-sm transition hover:bg-[var(--surface-muted)] disabled:opacity-60"
+        aria-controls={menuId}
+        onClick={() => {
+          place()
+          setOpen((value) => !value)
+        }}
+        className={`action-trigger ${open ? 'action-trigger-open' : ''}`}
       >
-        {busy ? 'Salvando…' : 'Ações'}
-        <span aria-hidden className="text-[10px] text-[var(--muted-foreground)]">
-          ▾
-        </span>
+        <span className="sr-only">{busy ? 'Salvando' : 'Ações'}</span>
+        <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden>
+          <circle cx="5" cy="12" r="1.7" />
+          <circle cx="12" cy="12" r="1.7" />
+          <circle cx="19" cy="12" r="1.7" />
+        </svg>
       </button>
-      {open ? (
-        <div
-          ref={menuRef}
-          role="menu"
-          style={{ top: pos.top, left: pos.left }}
-          className="fixed z-50 min-w-40 -translate-x-full rounded-xl border border-[var(--border)] bg-[var(--card)] py-1 shadow-lg"
-        >
+      {open
+        ? createPortal(
+        <div ref={menuRef} id={menuId} role="menu" style={{ top: pos.top, left: pos.left, width: MENU_WIDTH }} className="action-menu">
           {items.map((item) => {
-            const className = `block w-full px-3 py-2 text-left text-sm transition hover:bg-[var(--surface-muted)] disabled:cursor-not-allowed disabled:opacity-40 ${
-              item.danger ? 'text-red-600 dark:text-red-400' : ''
-            }`
+            const className = `action-menu-item ${item.danger ? 'action-menu-danger' : ''} ${item.disabled ? 'action-menu-current' : ''}`
+            const body = (
+              <>
+                <span>{item.label}</span>
+                {item.disabled ? <span className="action-menu-badge">Atual</span> : null}
+              </>
+            )
             if (item.href) {
               return (
                 <Link key={item.label} href={item.href} role="menuitem" className={className} onClick={() => setOpen(false)}>
-                  {item.label}
+                  {body}
                 </Link>
               )
             }
@@ -87,12 +108,14 @@ export function ActionMenu({ items, busy }: { items: Item[]; busy?: boolean }) {
                   item.onSelect?.()
                 }}
               >
-                {item.label}
+                {body}
               </button>
             )
           })}
-        </div>
-      ) : null}
+        </div>,
+          document.body,
+        )
+        : null}
     </>
   )
 }

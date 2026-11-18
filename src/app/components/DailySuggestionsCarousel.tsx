@@ -1,6 +1,6 @@
 'use client'
 
-import Image from 'next/image'
+import { ProductImage } from '@/app/components/ProductImage'
 import { useCallback, useEffect, useState } from 'react'
 import type { Product } from '@domain/product'
 import { formatCents } from '@/lib/money'
@@ -80,10 +80,9 @@ export function DailySuggestionsCarousel({ products }: Props) {
         aria-live="polite"
       >
         <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-[var(--surface-muted)] ring-1 ring-[var(--border)]">
-          <Image
+          <ProductImage
             src={product.imageUrl}
             alt={product.name}
-            fill
             className="object-cover transition duration-500 hover:scale-[1.03]"
             sizes="(min-width: 640px) 50vw, 100vw"
             priority

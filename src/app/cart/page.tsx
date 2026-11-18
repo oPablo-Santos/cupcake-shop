@@ -1,6 +1,6 @@
 'use client'
 
-import Image from 'next/image'
+import { ProductImage } from '@/app/components/ProductImage'
 import Link from 'next/link'
 import { useCart } from '@/app/components/CartProvider'
 import { formatCents } from '@/lib/money'
@@ -61,7 +61,7 @@ export default function CartPage() {
                   <td className="px-4 py-4">
                     <div className="flex items-center gap-3">
                       <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-[var(--surface-muted)] ring-1 ring-[var(--border)]">
-                        <Image src={item.imageUrl} alt={item.name} fill className="object-cover" sizes="56px" />
+                        <ProductImage src={item.imageUrl} alt={item.name} className="object-cover" sizes="56px" />
                       </div>
                       <div>
                         <p className="font-medium leading-snug">{item.name}</p>

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Checkout | Cupcake Shop',
+  title: { absolute: 'Checkout | Cupcake Shop' },
   description: 'Finalize seu pedido com dados de entrega e pagamento simulado.',
 }
 

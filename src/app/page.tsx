@@ -5,7 +5,7 @@ import { DailySuggestionsCarousel } from '@/app/components/DailySuggestionsCarou
 import { pickDailyProducts } from '@domain/pickDailyProducts'
 
 export const metadata: Metadata = {
-  title: 'Cupcakes artesanais para encomenda | Cupcake Shop',
+  title: { absolute: 'Cupcakes artesanais para encomenda | Cupcake Shop' },
   description:
     'Compre cupcakes artesanais com sabores exclusivos, pagamento simulado e pedido online direto pela Cupcake Shop.',
   keywords: [
